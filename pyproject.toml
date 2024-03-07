@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ParseXMFA2"
+readme = "README.md"
+description = "ParseXMFA2: A toolkit for SNP calling XMFA files."
+version = "1.0"
+requires-python = ">= 3.8"
+license = { file = "LICENSE"}
+keywords = ["Bioinformatics", "SNP-typing", "sequence-data"]
+authors = [
+    {name = "Fredrik Sörensen", email = "fredrik.sorensen@foi.se"},
+    {name = "David Sundell", email = "david.sundell@foi.se"}
+]
+maintainers = [
+    {name = "Fredrik Sörensen", email = "fredrik.sorensen@foi.se"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+
+    "Intended Audience :: Anyone",
+    "Topic :: Bioinformatics :: Variant Calling",
+
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+
+    "Operating System :: OS Independent"
+]
+dependencies = [
+    "VariantCallFixer @ git+ssh://git@github.com/XJ-04561/VariantCallFixer.git"
+]
+
+[project.urls]
+Repository = "https://github.com/XJ-04561/ParseXMFA2.git"
+
+[project.scripts]
+ParseXMFA2 = "ParseXMFA2.ParseXMFA2"
