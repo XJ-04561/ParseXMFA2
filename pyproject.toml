@@ -40,4 +40,4 @@ dependencies = [
 Repository = "https://github.com/XJ-04561/ParseXMFA2.git"
 
 [project.scripts]
-ParseXMFA2 = "ParseXMFA2.ParseXMFA2"
+ParseXMFA2 = "ParseXMFA2.CLI:main"

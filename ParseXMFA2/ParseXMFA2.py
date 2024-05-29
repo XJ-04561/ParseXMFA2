@@ -3,71 +3,11 @@ ParseXMFA is a script that parse xmfa files and extract all SNPs
 	The script allows an option using a flanking score that limits
 	SNPs near edges of a block to have a impact on classifying decisions.
 '''
+from ParseXMFA2.Globals import *
+import ParseXMFA2.Globals as Globals
+from ParseXMFA2.Auxiliary import Map, PseudoRange
 
-#__name__="ParseXMFA"
-import re, mmap
-
-LINEWIDTH = 80
-
-class PseudoRange:
-	start : int
-	stop : int
-	def __init__(self, start, stop):
-		self.start = start
-		self.stop = stop
-	
-	def __lt__(self, n):
-		return self.start < n
-	
-	def __gt__(self, n):
-		return self.stop > n
-
-class Map:
-	_ranges : list[range]
-	_filepos : list[int]
-	_newline : str
-
-	def __init__(self, newline):
-		self._ranges = []
-		self._filepos = []
-		self._newline = newline
-
-	def __contains__(self, pos):
-		for r in self._ranges:
-			if pos >= r.start:
-				if pos <= r.stop:
-					return True
-				break
-		return False
-
-	def __iadd__(self, newRange : tuple[int,range]):
-		for i, r in enumerate(self._ranges):
-			# Overlaps should not happen?
-			# if newRange.stop > r.start:
-			# 	if newRange.start < r.stop:
-			# 		# Overlapping
-			# 		self._ranges[i] = range(min(newRange.start, r.start), max(newRange.stop, r.stop))
-			if newRange[1].start > r.start:
-				self._filepos.insert(i, newRange[0])
-				self._ranges.insert(i, newRange[1])
-	
-	def __getitem__(self, pos : int):
-		'''Return where in the associated file object that this position corresponds to.'''
-		for i, r in enumerate(self._ranges):
-			if pos > r.start:
-				if pos > r.stop:
-					break
-				else:
-					return self._filepos[i] + pos - r.start + len(self._newline)*(pos - r.start)//LINEWIDTH
-		return "-"
-
-	def find(self, pos : int):
-		'''Return where in the associated file object that this position corresponds to.'''
-		return self[pos]
-	
-
-
-class ParseXMFA:
+class ParseXMFA2:
 	entryHeader : re.Pattern = re.compile(b"^[>] (?P<seqID>[0-9]+):(?P<start>[0-9]+)-(?P<stop>[0-9]+) - .*", re.MULTILINE)
 	reference : int
 	filename : str
@@ -133,27 +73,3 @@ class ParseXMFA:
 			return [map[pos] for map in self.coverage]
 		else:
 			return [[map[p] for map in self.coverage] for p in [pos]+mPos]
-
-if __name__=="__main__":
-	import argparse
-	from VariantCallFixer.Functions import openVCF
-	aparse = argparse.ArgumentParser()
-	aparse.add_argument("XMFAfile", metavar="XMFAfile", help="Alignment .XMFA file to load.")
-	aparse.add_argument("SNPfile", metavar="SNPfile", help="A .vcf file of the SNPs to be called.")
-	aparse.add_argument("-o", "--output", metavar="outFile", help="Name of the .vcf file to be created.")
-	aparse.add_argument("-rID", "--referenceID", metavar="referenceID", help="The reference sequence used to create the .XMFA file.")
-
-	args = aparse.parse_args()
-
-	print("Creating Index.")
-	parser = ParseXMFA(filename=args.XMFAfile, referenceID=args.referenceID)
-
-	print(f"Opening {args.SNPfile!r}.")
-	snpFile = openVCF(args.SNPfile, "r")
-	
-	print(f"Creating {args.outFile!r}.")
-	outFile = openVCF(args, "w", referenceFile="")
-	for entry in snpFile:
-		outFile.add(POS=entry.POS, REF=parser[entry.POS])
-	outFile.close()
-	print("Done!")
